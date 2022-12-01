@@ -2,13 +2,16 @@ const express = require('express');
 const { Server: HttpServer } = require('http');
 const { Server: SocketServer } = require('socket.io');
 const { engine } = require('express-handlebars');
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
 
+const MongoContainer = require('./models/containers/Mongodb.container');
 const SQLClient = require('./db/clients/sql.clients');
 const dbConfig = require('./db/db.config');
 const envConfig = require('./config');
 const initialProducts = require('./db/assets/initialProducts');
-const session = require('express-session');
-const MongoStore = require('connect-mongo');
+const passport = require('./middlewares/passport');
+const routes = require('./routers/app.routers');
 
 const { createMessagesTable, createProductsTable } = require('./db/utils/createTables');
 
@@ -57,11 +60,8 @@ app.use(
     }),
   })
 );
-
-// Listen
-httpServer.listen(PORT, () => {
-  console.log('Server running on port', PORT);
-});
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Socket events
 io.on('connection', async (socket) => {
@@ -88,44 +88,13 @@ io.on('connection', async (socket) => {
 });
 
 // Routes
-app.get('/', async (req, res) => {
-  const username = req.session.user;
-  if (!username) {
-    res.redirect('/login');
-  }
-  res.render('home.hbs', { username: username });
-});
 
-app.get('/login', async (req, res) => {
-  res.sendFile('login.html', { root: 'public' });
-});
+app.use('/', routes);
 
-app.post('/login', async (req, res) => {
-  const { username } = req.body;
-  req.session.user = username;
-  console.log(username);
-  req.session.save((error) => {
-    if (error) {
-      console.log('Session error => ' + error);
-      return res.redirect('/error');
-    }
-    res.redirect('/');
+// Listen
+httpServer.listen(PORT, () => {
+  MongoContainer.connect().then(() => {
+    console.log('Connected to DB!');
+    console.log('Server running on port', PORT);
   });
-});
-
-app.get('/logout', async (req, res) => {
-  try {
-    await req.session.destroy((err) => {
-      if (err) {
-        console.log(err);
-        res.clearCookie('my-session');
-      } else {
-        res.clearCookie('my-session');
-        res.send('Hasta luego');
-        // res.redirect('/login');
-      }
-    });
-  } catch (err) {
-    console.log(err);
-  }
 });
