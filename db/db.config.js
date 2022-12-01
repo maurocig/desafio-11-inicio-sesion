@@ -18,6 +18,6 @@ module.exports = {
     useNullAsDefault: true,
   },
   mongodb: {
-    uri: `mongodb+srv://maurocig:${envConfig.DB_PASSWORD}@coderxx.fm0gxl1.mongodb.net/?retryWrites=true&w=majority`,
+    uri: `mongodb+srv://maurocig:${envConfig.DB_PASSWORD}@coderxx.fm0gxl1.mongodb.net/desafio-login?retryWrites=true&w=majority`,
   },
 };

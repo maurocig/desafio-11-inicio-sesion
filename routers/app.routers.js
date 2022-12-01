@@ -8,31 +8,22 @@ const router = express.Router();
 router.use('/auth', authRoutes);
 
 router.get('/', async (req, res) => {
-  const username = req.session.user;
-  if (!username) {
+  const user = req.user;
+  console.log(user);
+  if (user) {
+    res.render('home.hbs', { username: user.email });
+  } else {
     res.redirect('/login');
   }
-  res.render('home.hbs', { username: username });
 });
 
 router.get('/login', async (req, res) => {
   res.sendFile('login.html', { root: 'public' });
 });
 
-// router.post('/login', async (req, res) => {
-//   const { username } = req.body;
-//   req.session.user = username;
-//   console.log(username);
-//   req.session.save((error) => {
-//     if (error) {
-//       console.log('Session error => ' + error);
-//       return res.redirect('/error');
-//     }
-//     res.redirect('/');
-//   });
-// });
-
-router.post('/register', async (req, res) => {});
+router.get('/register', async (req, res) => {
+  res.sendFile('register.html', { root: 'public' });
+});
 
 router.get('/logout', async (req, res) => {
   try {
@@ -49,6 +40,14 @@ router.get('/logout', async (req, res) => {
   } catch (err) {
     console.log(err);
   }
+});
+
+router.get('/signin-error', async (req, res) => {
+  res.render('login-error.hbs', {});
+});
+
+router.get('/signup-error', async (req, res) => {
+  res.render('register-error.hbs', {});
 });
 
 module.exports = router;

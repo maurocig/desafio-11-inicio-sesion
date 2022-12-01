@@ -26,6 +26,7 @@ passport.use(
           password: createHash(password),
         };
         const newUser = formatUserForDB(userItem);
+        console.log(`formatted user for db: ${newUser}`);
         const user = await User.createUser(newUser);
         console.log('User registration successful');
         return done(null, user);
@@ -51,6 +52,7 @@ passport.use(
       return done(null, user);
     } catch (error) {
       console.log('Error signing in...');
+      console.log(error);
       return done(error);
     }
   })
